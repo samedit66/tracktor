@@ -23,7 +23,6 @@ while input_video.isOpened():
     if not success:
         break
 
-    # classes=15 - определяем только кошек и котов
     results = model.predict(frame, classes=args.obj_class, verbose=False)
     annotated_frame = results[0].plot()
 
