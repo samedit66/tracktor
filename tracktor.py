@@ -15,6 +15,13 @@ parser.add_argument('--class',
 args = parser.parse_args()
 
 input_video = cv2.VideoCapture(args.video_path)
+fps = input_video.get(cv2.CAP_PROP_FPS)
+width = int(input_video.get(cv2.CAP_PROP_FRAME_WIDTH))
+height = int(input_video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+length = int(input_video.get(cv2.CAP_PROP_FRAME_COUNT))
+
+output_path = 'output.avi'
+output_video = cv2.VideoWriter(output_path , cv2.VideoWriter_fourcc(*'MJPG'), fps, (width, height))
 
 model = YOLO('yolov8n.pt')
 while input_video.isOpened():
@@ -26,10 +33,8 @@ while input_video.isOpened():
     results = model.predict(frame, classes=args.obj_class, verbose=False)
     annotated_frame = results[0].plot()
 
-    cv2.imshow('Tracktor', annotated_frame)
-
-    if cv2.waitKey(1) & 0xff == ord('q'):
-        break
+    output_video.write(annotated_frame)
 
 input_video.release()
+output_video.release()
 cv2.destroyAllWindows()
