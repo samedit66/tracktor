@@ -3,6 +3,7 @@ import argparse
 import cv2
 from ultralytics import YOLO
 import numpy as np
+from tqdm import tqdm
 
 
 parser = argparse.ArgumentParser()
@@ -25,6 +26,7 @@ output_path = 'output.avi'
 output_video = cv2.VideoWriter(output_path , cv2.VideoWriter_fourcc(*'MJPG'), fps, (width, height))
 
 model = YOLO('yolov8n.pt')
+progress_bar = tqdm(total=length)
 while input_video.isOpened():
     success, frame = input_video.read()
     
@@ -52,6 +54,10 @@ while input_video.isOpened():
     annotated_frame = results[0].plot(img=black_frame)
 
     output_video.write(annotated_frame)
+
+    progress_bar.update(1)
+
+progress_bar.close()
 
 input_video.release()
 output_video.release()
