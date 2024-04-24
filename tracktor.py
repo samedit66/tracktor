@@ -14,6 +14,12 @@ parser.add_argument('--class',
                     help='class index according to COCO 2017 dataset',
                     required=True,
                     )
+parser.add_argument('--yolo',
+                    dest='yolo',
+                    type=str,
+                    help='YOLO model for detection',
+                    default='yolov8n.pt',
+                    )
 args = parser.parse_args()
 
 input_video = cv2.VideoCapture(args.video_path)
@@ -25,7 +31,7 @@ length = int(input_video.get(cv2.CAP_PROP_FRAME_COUNT))
 output_path = 'output.avi'
 output_video = cv2.VideoWriter(output_path , cv2.VideoWriter_fourcc(*'MJPG'), fps, (width, height))
 
-model = YOLO('yolov8n.pt')
+model = YOLO(args.yolo)
 progress_bar = tqdm(total=length)
 while input_video.isOpened():
     success, frame = input_video.read()
