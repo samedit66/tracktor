@@ -2,6 +2,7 @@ import argparse
 
 import cv2
 from ultralytics import YOLO
+import numpy as np
 
 
 parser = argparse.ArgumentParser()
@@ -30,8 +31,25 @@ while input_video.isOpened():
     if not success:
         break
 
-    results = model.predict(frame, classes=args.obj_class, verbose=False)
-    annotated_frame = results[0].plot()
+    results = model.track(frame, classes=args.obj_class, persist=True, verbose=False)
+
+    # Для обрезки искомых объектов...
+    boxes = results[0].boxes.xywh
+    # ...создается полностью черный кадр,
+    # в который будут копироваться bounding boxes найденных сущностей.
+    # Поверх этого кадра будут отрисоваться сами bounding boxes.
+    black_frame = np.zeros_like(frame)
+    for box in boxes:
+        # Необходимо скорректировать координаты: формат xywh YOLO обозначает
+        # центральную координату bounding box и ширину и высоту.
+        # Меняем координаты так, чтобы x и y были координатами левого верхнего угла.
+        x, y, w, h = [int(c) for c in box]
+        x = x - w//2
+        y = y - h//2
+        # Копируем из исходного кадра изображений найденного объекта.
+        black_frame[y:y+h, x:x+w] = frame[y:y+h, x:x+w]
+    # Отрисовываем рамку в которой описан ID сущности, имя класса и скор для данного класса.
+    annotated_frame = results[0].plot(img=black_frame)
 
     output_video.write(annotated_frame)
 
